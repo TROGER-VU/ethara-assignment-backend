@@ -28,3 +28,7 @@ app.get("/test-db", async (req, res) => {
     res.status(500).json({ error: "DB connection failed" });
   }
 });
+
+const authRoutes = require("./src/routes/authRoutes");
+
+app.use("/auth", authRoutes);
