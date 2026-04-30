@@ -32,3 +32,9 @@ app.get("/test-db", async (req, res) => {
 const authRoutes = require("./src/routes/authRoutes");
 
 app.use("/auth", authRoutes);
+
+const authMiddleware = require("./src/middleware/authMiddleware");
+
+const projectRoutes = require("./src/routes/projectRoutes");
+
+app.use("/projects", projectRoutes);
