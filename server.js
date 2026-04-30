@@ -42,3 +42,8 @@ app.use("/projects", projectRoutes);
 const taskRoutes = require("./src/routes/taskRoutes");
 
 app.use("/tasks", taskRoutes);
+
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./src/config/swagger");
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

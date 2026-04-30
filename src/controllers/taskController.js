@@ -6,6 +6,10 @@ exports.createTask = async (req, res) => {
     const { title, projectId, assignedTo } = req.body;
     const createdBy = req.user.id;
 
+    if (!title || !projectId) {
+        return res.status(400).json({ error: "Missing fields" });
+    }
+
     const result = await pool.query(
       `INSERT INTO tasks (title, project_id, assigned_to, created_by)
        VALUES ($1, $2, $3, $4)
@@ -76,5 +80,66 @@ exports.getProjectTasks = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Fetch failed" });
+  }
+};
+
+exports.getMyTasks = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `SELECT * FROM tasks WHERE assigned_to = $1`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET MY TASKS ERROR:", err); // 👈 IMPORTANT
+
+    res.status(500).json({
+      error: "Fetch failed",
+      message: err.message
+    });
+  }
+};
+
+exports.getOverdueTasks = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `SELECT * FROM tasks
+       WHERE assigned_to = $1
+       AND due_date < NOW()
+       AND status != 'done'`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Fetch failed" });
+  }
+};
+
+exports.getProjectStats = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const result = await pool.query(
+      `SELECT
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE status = 'todo') AS todo,
+        COUNT(*) FILTER (WHERE status = 'in-progress') AS in_progress,
+        COUNT(*) FILTER (WHERE status = 'done') AS done
+       FROM tasks
+       WHERE project_id = $1`,
+      [projectId]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Stats failed" });
   }
 };

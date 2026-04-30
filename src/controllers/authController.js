@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email & password required" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
