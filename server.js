@@ -38,3 +38,7 @@ const authMiddleware = require("./src/middleware/authMiddleware");
 const projectRoutes = require("./src/routes/projectRoutes");
 
 app.use("/projects", projectRoutes);
+
+const taskRoutes = require("./src/routes/taskRoutes");
+
+app.use("/tasks", taskRoutes);

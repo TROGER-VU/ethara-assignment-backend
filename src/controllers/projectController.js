@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 
+// CREATE PROJECT
 exports.createProject = async (req, res) => {
   try {
     const { name, description } = req.body;
