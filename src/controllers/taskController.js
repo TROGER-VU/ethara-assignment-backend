@@ -3,18 +3,37 @@ const pool = require("../config/db");
 // CREATE TASK
 exports.createTask = async (req, res) => {
   try {
-    const { title, projectId, assignedTo } = req.body;
+    const {
+      title,
+      description,
+      status,
+      priority,
+      due_date,
+      projectId,
+      assignedTo,
+    } = req.body;
+
     const createdBy = req.user.id;
 
-    if (!title || !projectId) {
-        return res.status(400).json({ error: "Missing fields" });
+    if (!title || !projectId || !assignedTo) {
+        return res.status(400).json({ error: "Missing required fields" });
     }
 
     const result = await pool.query(
-      `INSERT INTO tasks (title, project_id, assigned_to, created_by)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO tasks 
+       (title, description, status, priority, due_date, project_id, assigned_to, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING *`,
-      [title, projectId, assignedTo, createdBy]
+      [
+        title,
+        description,
+        status,
+        priority,
+        due_date,
+        projectId,
+        assignedTo,
+        createdBy,
+      ]
     );
 
     res.json(result.rows[0]);

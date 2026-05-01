@@ -18,18 +18,26 @@ const projectAdmin = require("../middleware/projectAdmin");
  *   post:
  *     summary: Create a new project
  *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             name: Test Project
- *             description: Sample project
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Task Manager
+ *               description:
+ *                 type: string
+ *                 example: Internal project
  *     responses:
  *       200:
- *         description: Project created
+ *         description: Project created successfully
+ *       401:
+ *         description: Unauthorized
  */
 router.post("/", auth, createProject);
 
@@ -37,22 +45,30 @@ router.post("/", auth, createProject);
  * @swagger
  * /projects/add-member:
  *   post:
- *     summary: Add member to project (Admin only)
+ *     summary: Add a user to a project (Admin only)
  *     tags: [Projects]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             projectId: PROJECT_ID
- *             userId: USER_ID
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectId
+ *               - userId
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 example: PROJECT_UUID
+ *               userId:
+ *                 type: string
+ *                 example: USER_UUID
  *     responses:
  *       200:
- *         description: Member added
+ *         description: Member added successfully
+ *       403:
+ *         description: Admin only
  */
 router.post("/add-member", auth, projectAdmin, addMember);
-
 
 module.exports = router;

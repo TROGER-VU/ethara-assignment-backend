@@ -25,21 +25,50 @@ const projectAdmin = require("../middleware/projectAdmin");
  * @swagger
  * /tasks:
  *   post:
- *     summary: Create a task
+ *     summary: Create a new task
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             title: Fix bug
- *             projectId: PROJECT_ID
- *             assignedTo: USER_ID
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - projectId
+ *               - assignedTo
+ *               - status
+ *               - priority
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Fix login bug
+ *               description:
+ *                 type: string
+ *                 example: Fix the authentication issue in login API
+ *               status:
+ *                 type: string
+ *                 enum: [todo, in-progress, done]
+ *                 example: todo
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 example: high
+ *               due_date:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2026-05-10T10:00:00Z
+ *               projectId:
+ *                 type: string
+ *                 example: PROJECT_UUID
+ *               assignedTo:
+ *                 type: string
+ *                 example: USER_UUID
  *     responses:
  *       200:
- *         description: Task created
+ *         description: Task created successfully
+ *       400:
+ *         description: Invalid input
  */
 router.post("/", auth, projectAccess, createTask);
 
@@ -47,21 +76,30 @@ router.post("/", auth, projectAccess, createTask);
  * @swagger
  * /tasks/assign:
  *   post:
- *     summary: Assign task (Admin only)
+ *     summary: Assign a task to a user (Admin only)
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             taskId: TASK_ID
- *             userId: USER_ID
- *             projectId: PROJECT_ID
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskId
+ *               - userId
+ *               - projectId
+ *             properties:
+ *               taskId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *               projectId:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Task assigned
+ *       403:
+ *         description: Admin only
  */
 router.post("/assign", auth, projectAdmin, assignTask);
 
@@ -69,42 +107,30 @@ router.post("/assign", auth, projectAdmin, assignTask);
  * @swagger
  * /tasks/status:
  *   patch:
- *     summary: Update task status (Assigned user only)
+ *     summary: Update task status (assigned user only)
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             taskId: TASK_ID
- *             status: done
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskId
+ *               - status
+ *             properties:
+ *               taskId:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 example: done
  *     responses:
  *       200:
  *         description: Task updated
+ *       403:
+ *         description: Not allowed
  */
 router.patch("/status", auth, updateTaskStatus);
-
-/**
- * @swagger
- * /tasks/{projectId}:
- *   get:
- *     summary: Get tasks for a project
- *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: List of tasks
- */
-router.get("/:projectId", auth, projectAccess, getProjectTasks);
 
 /**
  * @swagger
@@ -112,14 +138,11 @@ router.get("/:projectId", auth, projectAccess, getProjectTasks);
  *   get:
  *     summary: Get tasks assigned to current user
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of tasks
+ *         description: List of user tasks
  */
 router.get("/my-tasks", auth, getMyTasks);
-
 
 /**
  * @swagger
@@ -127,8 +150,6 @@ router.get("/my-tasks", auth, getMyTasks);
  *   get:
  *     summary: Get overdue tasks
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of overdue tasks
@@ -139,10 +160,8 @@ router.get("/overdue", auth, getOverdueTasks);
  * @swagger
  * /tasks/stats/{projectId}:
  *   get:
- *     summary: Get project task statistics
+ *     summary: Get task statistics for a project
  *     tags: [Tasks]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -151,9 +170,26 @@ router.get("/overdue", auth, getOverdueTasks);
  *           type: string
  *     responses:
  *       200:
- *         description: Task stats
+ *         description: Task statistics
  */
 router.get("/stats/:projectId", auth, projectAccess, getProjectStats);
 
+/**
+ * @swagger
+ * /tasks/{projectId}:
+ *   get:
+ *     summary: Get all tasks of a project
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of project tasks
+ */
+router.get("/:projectId", auth, projectAccess, getProjectTasks);
 
 module.exports = router;
