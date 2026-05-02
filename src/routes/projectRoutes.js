@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
-const { createProject, addMember } = require("../controllers/projectController");
+const { createProject, addMember, getMyProjects, getProjectById, getProjectMembers } = require("../controllers/projectController");
 const projectAdmin = require("../middleware/projectAdmin");
 
 /**
@@ -70,5 +70,11 @@ router.post("/", auth, createProject);
  *         description: Admin only
  */
 router.post("/add-member", auth, projectAdmin, addMember);
+
+router.get("/my", auth, getMyProjects);
+
+router.get("/:projectId", auth, getProjectById);
+
+router.get("/:projectId/members", auth, getProjectMembers);
 
 module.exports = router;

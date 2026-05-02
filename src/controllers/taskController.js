@@ -6,33 +6,27 @@ exports.createTask = async (req, res) => {
     const {
       title,
       description,
-      status,
+      projectId,
       priority,
       due_date,
-      projectId,
-      assignedTo,
     } = req.body;
 
     const createdBy = req.user.id;
-
-    if (!title || !projectId || !assignedTo) {
-        return res.status(400).json({ error: "Missing required fields" });
-    }
+    const assignedTo = req.user.id; // 👈 YOUR DECISION
 
     const result = await pool.query(
       `INSERT INTO tasks 
-       (title, description, status, priority, due_date, project_id, assigned_to, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      (title, description, project_id, assigned_to, created_by, priority, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
         title,
         description,
-        status,
-        priority,
-        due_date,
         projectId,
         assignedTo,
         createdBy,
+        priority,
+        due_date,
       ]
     );
 
@@ -91,7 +85,12 @@ exports.getProjectTasks = async (req, res) => {
     const { projectId } = req.params;
 
     const result = await pool.query(
-      `SELECT * FROM tasks WHERE project_id = $1`,
+      `SELECT 
+         t.*, 
+         u.name AS assigned_name
+       FROM tasks t
+       LEFT JOIN users u ON t.assigned_to = u.id
+       WHERE t.project_id = $1`,
       [projectId]
     );
 
